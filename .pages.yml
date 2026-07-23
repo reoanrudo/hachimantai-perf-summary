@@ -6,7 +6,7 @@ content:
   - name: summary
     label: パフォーマンス最適化まとめ
     type: file
-    path: content/summary.md
+    path: content/summary.txt
     format: yaml-frontmatter
     fields:
       - name: title

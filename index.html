@@ -105,8 +105,8 @@ tbody tr:nth-child(even){background:#f8fafc}
 <div id="content">Loading...</div>
 </div>
 <script>
-// content/summary.md を取得してレンダリング
-fetch('content/summary.md')
+// content/summary.txt を取得してレンダリング
+fetch('content/summary.txt')
   .then(function(r){ return r.text() })
   .then(function(markdown){
     // YAML frontmatter を分離
