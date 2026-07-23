@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八幡平市サイト - プロジェクトダッシュボード</title>
+<style>
+:root{
+  --primary:#116384;--primary-dark:#0d4d66;--primary-light:#e3f2f9;
+  --night:#0a1f23;--night2:#143235;
+  --surface:#fbf9f8;--surface2:#f6f3f2;--surface3:#f1f5f9;
+  --text:#1b1c1c;--text2:#40484d;--text3:#64748b;--outline:#c0c7ce;--outline2:#e2e8f0;
+  --green:#16a34a;--green-l:#4ade80;--green-bg:#f0fdf4;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --amber:#d97706;--amber-bg:#fffbeb;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --purple:#9333ea;--purple-bg:#faf5ff;
+  --accent:#d89b1d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Hiragino Sans","Yu Gothic","Meiryo",system-ui,-apple-system,sans-serif;
+  background:var(--surface);color:var(--text);line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── ナビゲーション ── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(251,249,248,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--outline2);
+  padding:12px 24px;
+}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.nav-brand{font-weight:900;font-size:1.1em;color:var(--primary);white-space:nowrap}
+.nav-brand span{font-size:0.7em;font-weight:600;color:var(--text3);margin-left:8px}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-links a{
+  padding:6px 14px;border-radius:8px;font-size:0.85em;font-weight:600;
+  color:var(--text2);transition:all .15s;
+}
+.nav-links a:hover{background:var(--primary-light);color:var(--primary);text-decoration:none}
+.nav-status{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  font-size:0.78em;color:var(--text3);
+}
+.nav-status .dot{
+  width:10px;height:10px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px rgba(22,163,74,.5);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── コンテナ ── */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* ── ヒーロー ── */
+.hero{
+  background:linear-gradient(135deg,var(--night),var(--night2) 40%,var(--primary-dark) 75%,var(--primary));
+  border-radius:0 0 24px 24px;
+  padding:48px 40px 40px;
+  color:#fff;position:relative;overflow:hidden;
+  margin-bottom:40px;
+}
+.hero::before{
+  content:"";position:absolute;top:-80px;right:-80px;
+  width:300px;height:300px;
+  background:radial-gradient(circle,rgba(216,155,29,.12),transparent 70%);
+  border-radius:50%;
+}
+.hero::after{
+  content:"";position:absolute;bottom:-60px;left:-60px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,104,95,.15),transparent 70%);
+  border-radius:50%;
+}
+.hero-content{position:relative}
+.hero-kicker{
+  font-size:0.72em;font-weight:700;letter-spacing:0.2em;opacity:0.5;margin-bottom:8px;
+}
+.hero h1{font-size:2em;font-weight:900;margin-bottom:12px;line-height:1.2}
+.hero-desc{font-size:0.9em;opacity:0.75;max-width:600px}
+.hero-desc code{background:rgba(255,255,255,.12);padding:2px 8px;border-radius:4px;font-size:.9em}
+
+/* ステータスカード */
+.stats-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;
+  margin-top:28px;position:relative;
+}
+.stat{
+  background:rgba(255,255,255,.08);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);border-radius:16px;
+  padding:18px 24px;
+  transition:transform .2s,border-color .2s;
+}
+.stat:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.25)}
+.stat-label{font-size:0.68em;font-weight:600;letter-spacing:.12em;opacity:.55;margin-bottom:6px}
+.stat-value{font-size:2em;font-weight:900;line-height:1}
+.stat-sub{font-size:0.72em;opacity:.6;margin-top:4px}
+.stat-trend{display:inline-flex;align-items:center;gap:4px;font-size:.75em;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px}
+.trend-up{background:rgba(74,222,128,.15);color:var(--green-l)}
+.trend-flat{background:rgba(255,255,255,.1);opacity:.6}
+
+/* ── セクション見出し ── */
+.section{margin-bottom:48px}
+.section-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.section-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1em;font-weight:900;color:#fff;flex-shrink:0;
+}
+.section-title{font-size:1.4em;font-weight:800;color:var(--primary)}
+.section-sub{font-size:0.82em;color:var(--text3);font-weight:400}
+.section-line{flex:1;height:2px;background:linear-gradient(90deg,var(--primary),transparent);border-radius:1px;margin-left:8px}
+
+/* ── タスクカード ── */
+.task-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.task{
+  background:#fff;border:1px solid var(--outline2);border-radius:14px;
+  padding:18px 24px;display:flex;gap:16px;align-items:flex-start;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  border-left:5px solid var(--primary);
+}
+.task:hover{transform:translateX(4px);box-shadow:0 4px 16px rgba(0,0,0,.06);border-left-color:var(--accent)}
+.task-num{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;min-width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1em;flex-shrink:0;
+  box-shadow:0 4px 8px rgba(17,99,132,.25);
+}
+.task-best .task-num{background:linear-gradient(135deg,var(--accent),#b8860b);box-shadow:0 4px 12px rgba(216,155,29,.35)}
+.task-done .task-num{background:linear-gradient(135deg,var(--green),#15803d);box-shadow:0 4px 8px rgba(22,163,74,.25)}
+.task-revert .task-num{background:linear-gradient(135deg,#64748b,#475569)}
+.task-best{border-left-color:var(--accent);background:linear-gradient(135deg,#fffbeb,#fff8e1)}
+.task-revert{border-left-color:#94a3b8}
+.task-body{flex:1;min-width:0}
+.task-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.task-title{font-size:1.02em;font-weight:700;color:var(--text)}
+.commit{
+  font-family:"SF Mono","Fira Code",monospace;font-size:0.72em;
+  background:var(--surface3);padding:2px 8px;border-radius:4px;color:var(--text3);
+}
+.task-detail{font-size:0.85em;color:var(--text2);line-height:1.65}
+.task-detail strong{color:var(--text)}
+.task-detail code{background:var(--surface3);padding:1px 5px;border-radius:3px;font-size:.92em}
+.task-effect{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--green-bg);color:#166534;
+  padding:5px 12px;border-radius:8px;font-size:0.8em;font-weight:600;
+  margin-top:8px;
+}
+.task-best .task-effect{background:#fff;border:1px solid #fcd34d;color:#92400e}
+.task-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{padding:3px 10px;border-radius:20px;font-size:0.76em;font-weight:600}
+.tag-green{background:#dcfce7;color:var(--green)}
+.tag-amber{background:#fef3c7;color:var(--amber)}
+.tag-red{background:#fee2e2;color:var(--red)}
+.tag-blue{background:#dbeafe;color:var(--blue)}
+.tag-gray{background:var(--surface3);color:var(--text3)}
+
+/* ── チャート ── */
+.chart-box{
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  border-radius:20px;padding:32px;margin-bottom:0;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+}
+.chart-bars{
+  display:flex;align-items:flex-end;justify-content:space-around;
+  gap:12px;height:200px;margin-bottom:16px;
+}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:100px}
+.bar{
+  width:100%;border-radius:8px 8px 0 0;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:8px;color:#fff;font-weight:800;font-size:.85em;
+  transition:height .3s ease;cursor:default;position:relative;
+}
+.bar:hover{filter:brightness(1.15)}
+.bar:hover .bar-tooltip{opacity:1;transform:translateY(-8px)}
+.bar-tooltip{
+  position:absolute;top:-36px;left:50%;transform:translateX(-50%);
+  background:#fff;color:#0f172a;font-size:.75em;font-weight:600;
+  padding:4px 10px;border-radius:6px;white-space:nowrap;
+  opacity:0;transition:all .2s;pointer-events:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+.bar-label{font-size:0.7em;color:#94a3b8;text-align:center;font-weight:500}
+.bar-val{font-size:0.9em;color:#fff;font-weight:800}
+
+/* ── インサイト ── */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.insight{
+  background:#fff;border:1px solid var(--outline2);border-radius:14px;
+  padding:20px 24px;display:flex;gap:14px;align-items:flex-start;
+  transition:transform .15s,box-shadow .15s;
+}
+.insight:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.06)}
+.insight-num{
+  min-width:36px;height:36px;border-radius:10px;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:.95em;flex-shrink:0;
+}
+.insight-body{font-size:0.86em;color:var(--text2);line-height:1.65}
+.insight-body strong{display:block;font-size:1.05em;margin-bottom:4px}
+
+/* ── 今後の改善 ── */
+.future-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.future{
+  border:2px solid;border-radius:16px;padding:24px;text-align:center;
+  transition:transform .15s;
+}
+.future:hover{transform:translateY(-4px)}
+.future-icon{font-size:2.2em;margin-bottom:8px}
+.future-name{font-size:0.92em;font-weight:700;margin-bottom:6px}
+.future-score{font-size:1.8em;font-weight:900}
+.future-impact{font-size:0.76em;margin-top:6px}
+
+/* ── フッター ── */
+.footer{
+  background:linear-gradient(135deg,var(--night),var(--night2));
+  border-radius:20px 20px 0 0;
+  padding:32px 40px;margin-top:48px;color:#fff;
+}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px}
+.footer-section h4{font-size:0.72em;font-weight:700;letter-spacing:.12em;opacity:.5;margin-bottom:10px}
+.footer-section p,.footer-section a{font-size:0.85em;opacity:.8;display:block;margin-bottom:6px}
+.footer-section code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:3px;font-size:.9em}
+.footer-bottom{text-align:center;font-size:0.75em;opacity:.4;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* ── レスポンシブ ── */
+@media(max-width:768px){
+  .hero{padding:32px 24px 28px;border-radius:0 0 16px 16px}
+  .hero h1{font-size:1.5em}
+  .stat{padding:14px 18px}.stat-value{font-size:1.6em}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .task{padding:14px 18px;flex-direction:column;gap:10px}
+  .chart-bars{height:140px;gap:6px}
+  .bar{font-size:.72em}
+  .insight-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ ナビゲーション ═══════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">🏛️ 八幡平市サイト <span>Project Dashboard</span></div>
+    <div class="nav-links">
+      <a href="#overview">概要</a>
+      <a href="#tasks">タスク</a>
+      <a href="#progress">推移</a>
+      <a href="#insights">学び</a>
+      <a href="#future">今後</a>
+    </div>
+    <div class="nav-status">
+      <span class="dot"></span>
+      <span>Performance最適化 進行中</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════ ヒーロー ═══════ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-kicker">⚡ PERFORMANCE OPTIMIZATION</div>
+    <h1>サイト軽量化プロジェクト</h1>
+    <p class="hero-desc">PageSpeed Insights スコア改善の記録。ブランチ: <code>perf/splus-optimization</code></p>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-label">📱 モバイル PERFORMANCE</div>
+        <div class="stat-value">60 → <span style="color:var(--green-l)">75</span></div>
+        <div class="stat-trend trend-up">▲ +15</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">🖥️ デスクトップ PERFORMANCE</div>
+        <div class="stat-value" style="color:var(--green-l)">94</div>
+        <div class="stat-trend trend-up">▲ +12</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">🚫 レンダリングブロック</div>
+        <div class="stat-value">140<span style="font-size:.5em;opacity:.5">ms</span></div>
+        <div class="stat-trend trend-up">▼ -69%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">✅ その他カテゴリ</div>
+        <div class="stat-value" style="color:var(--green-l)">ALL 100</div>
+        <div class="stat-trend trend-flat">維持</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════ タスク一覧 ═══════ -->
+<section class="section" id="tasks">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,var(--primary),var(--primary-dark))">🛠</div>
+    <div>
+      <div class="section-title">実施タスク</div>
+      <div class="section-sub">8タスク完了 + 1タスク取り消し</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="task-grid">
+
+    <!-- タスク5（最大効果） -->
+    <div class="task task-best">
+      <div class="task-num">🔥</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">フォント preload 追加</span>
+          <span class="commit">15a4f1c</span>
+          <span class="tag tag-amber">最大効果</span>
+        </div>
+        <div class="task-detail">
+          <strong>課題:</strong> CSS内の <code>@font-face</code> が参照するフォントDLが、CSS解析完了後に開始される直列チェーンで <strong>6,140ms</strong> のレンダブロックを発生。<br>
+          <strong>対応:</strong> <code>&lt;link rel="preload" as="font" crossorigin&gt;</code> を追加し、CSS解析と並行DL。
+        </div>
+        <div class="task-tags">
+          <span class="tag tag-green">Performance +13</span>
+          <span class="tag tag-blue">FCP 6.3→1.5秒</span>
+          <span class="tag tag-blue">ブロック 6140→970ms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- タスク1 -->
+    <div class="task task-done">
+      <div class="task-num">1</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">Google Fonts（Noto Sans JP）のセルフホスト化</span>
+          <span class="commit">6acf81e</span>
+        </div>
+        <div class="task-detail">
+          <strong>課題:</strong> Google Fonts CSS 119KB が最大ボトルネック。未使用CSS 118.4KiB + 最小化未対応 12.3KiB。<br>
+          <strong>対応:</strong> pyftsubset でサブセット化（3,290文字）。prebuild スクリプト新規作成。<code>@font-face</code> 直接定義。Google Fonts 完全削除。
+        </div>
+        <div class="task-effect">✅ 119KB CSS削除・CDN依存ゼロ・CSP厳格化</div>
+      </div>
+    </div>
+
+    <!-- タスク2 -->
+    <div class="task task-done">
+      <div class="task-num">2</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">ヒーロー画像のリサイズ・アーカイブ整理</span>
+          <span class="commit">8f23cd5</span>
+        </div>
+        <div class="task-detail">
+          <strong>課題:</strong> 元画像 6720×4480 / 24.8MB。4MB のフォールバック画像。169MB の未使用画像がデプロイ混入。<br>
+          <strong>対応:</strong> 2400×1600 にリサイズ（94%削減）。<code>fetchpriority="high"</code> 追加。アーカイブを <code>src/assets/</code> へ移動。
+        </div>
+        <div class="task-effect">✅ フォールバック 3.96MB→814KB・デプロイ 169MB削減・画質影響ゼロ</div>
+      </div>
+    </div>
+
+    <!-- タスク3 -->
+    <div class="task task-revert">
+      <div class="task-num">3</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">preload削除（画像・逆効果判定）</span>
+          <span class="commit">fc525ab</span>
+          <span class="tag tag-gray">取り消し</span>
+        </div>
+        <div class="task-detail">
+          <strong>課題:</strong> ヒーロー画像 preload が Lighthouse で <strong style="color:var(--red)">8,440ms のレンダブロック</strong>と誤判定。Performance 76→57 に悪化。<br>
+          <strong>対応:</strong> preload 削除。<code>fetchpriority="high"</code> のみ残す。<br>
+          <strong>学び:</strong> <code>imagesrcset</code> 付き preload は Lighthouse でブロック判定される既知の問題。
+        </div>
+      </div>
+    </div>
+
+    <!-- タスク4 -->
+    <div class="task task-done">
+      <div class="task-num">4</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">フォントウェイト 4→2 集約</span>
+          <span class="commit">6c0bb9c</span>
+        </div>
+        <div class="task-detail">
+          <strong>対応:</strong> <code>@font-face</code> の font-weight 範囲指定（<code>100 500</code> / <code>501 900</code>）で2ファイル集約。HTML/CSSは一切変更せず配信ファイルのみ最適化。
+        </div>
+        <div class="task-effect">✅ 転送量 1.9MB→955KB（50%削減）・Performance 57→61（+4）</div>
+      </div>
+    </div>
+
+    <!-- タスク6 -->
+    <div class="task task-done">
+      <div class="task-num">6</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">Font Awesome の font-display block→swap</span>
+          <span class="commit">a6611cd</span>
+        </div>
+        <div class="task-detail">
+          <strong>課題:</strong> <code>font-display: block</code> がフォント到着までアイコンを非表示にし、LCPのレンダリング遅延 <strong>2,060ms</strong> を引き起こしていた。<br>
+          <strong>対応:</strong> 3ウェイトすべて <code>block→swap</code>。FA solid フォントの preload も追加。
+        </div>
+        <div class="task-effect">✅ レンダ遅延 2,060→410ms（-1,650ms）・FCP 1.5→0.9秒</div>
+      </div>
+    </div>
+
+    <!-- タスク7+8 -->
+    <div class="task task-done">
+      <div class="task-num">7</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">ヒーロー画像 quality 最適化 + object-position 調整</span>
+          <span class="commit">bd2b19c · 14ec957</span>
+        </div>
+        <div class="task-detail">
+          quality 80→72。480w 追加。画像サイズ全体で18-19%削減。<code>object-position</code> を <code>center 50%</code> に統一。
+        </div>
+        <div class="task-effect">✅ レンダブロック 270→140ms・画質影響ほぼなし</div>
+      </div>
+    </div>
+
+    <!-- 取り消し -->
+    <div class="task task-revert">
+      <div class="task-num">⚠</div>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-title">CSS非同期化（media swap）— 取り消し</span>
+          <span class="tag tag-red">reverted</span>
+        </div>
+        <div class="task-detail">
+          モバイル+2点の改善があったが、デスクトップで <strong style="color:var(--red)">CLS 0.767</strong>（致命的レイアウトシフト）と <strong>Performance 94→70</strong> の悪化を引き起こした。<strong>モバイル+2 vs デスクトップ-24</strong> のトレードオフで取り消し。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════ スコア推移チャート ═══════ -->
+<section class="section" id="progress">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#0f172a,#1e293b)">📈</div>
+    <div>
+      <div class="section-title">スコア改善の推移</div>
+      <div class="section-sub">Performance の変遷（棒にホバーで詳細）</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="chart-box">
+    <div class="chart-bars">
+      <div class="bar-col">
+        <div class="bar-val">60</div>
+        <div class="bar" style="height:80px;background:linear-gradient(180deg,#64748b,#475569)">
+          <span class="bar-tooltip">開始時: FCP 1.3秒・ブロック 450ms</span>
+        </div>
+        <div class="bar-label">開始</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val" style="color:#f87171">57</div>
+        <div class="bar" style="height:50px;background:linear-gradient(180deg,#ef4444,#dc2626)">
+          <span class="bar-tooltip">GF削除: CSS内@font-face直列DLで悪化</span>
+        </div>
+        <div class="bar-label">GF削除</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val" style="color:#fbbf24">61</div>
+        <div class="bar" style="height:55px;background:linear-gradient(180deg,#f59e0b,#d97706)">
+          <span class="bar-tooltip">2ウェイト化: 転送量半減</span>
+        </div>
+        <div class="bar-label">2ウェイト</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val" style="color:#4ade80">74</div>
+        <div class="bar" style="height:100px;background:linear-gradient(180deg,#16a34a,#15803d)">
+          <span class="bar-tooltip">🔥 preload: CSS解析と並行DL（+13）</span>
+        </div>
+        <div class="bar-label">🔥 preload</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val" style="color:#4ade80">75</div>
+        <div class="bar" style="height:105px;background:linear-gradient(180deg,#16a34a,#15803d)">
+          <span class="bar-tooltip">FA swap: レンダ遅延 2060→410ms</span>
+        </div>
+        <div class="bar-label">FA swap</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val" style="color:#4ade80">75</div>
+        <div class="bar" style="height:108px;background:linear-gradient(180deg,#22c55e,#16a34a);box-shadow:0 0 20px rgba(34,197,94,.4)">
+          <span class="bar-tooltip">画質最適化: レンダブロック 140ms（最終）</span>
+        </div>
+        <div class="bar-label">最終</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 学んだこと ═══════ -->
+<section class="section" id="insights">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,var(--purple),#7e22ce)">🔑</div>
+    <div>
+      <div class="section-title">学んだこと・重要な知見</div>
+      <div class="section-sub">今回のプロジェクトで得たノウハウ</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight">
+      <div class="insight-num" style="background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 4px 8px rgba(59,130,246,.3)">1</div>
+      <div class="insight-body">
+        <strong>フォントは「サイズ」より「読み込みタイミング」が重要</strong>
+        ウェイト削減で+4、preload並列化で<strong style="color:var(--green)">+13</strong>。CSS解析と並行ダウンロードを始めることが最大の効果。
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num" style="background:linear-gradient(135deg,#eab308,#ca8a04);box-shadow:0 4px 8px rgba(234,179,8,.3)">2</div>
+      <div class="insight-body">
+        <strong>font-display: block は隠れた犯人</strong>
+        Font Awesomeの <code>block</code> がフォント到着までアイコンを非表示にし、LCP遅延2,060msを引き起こした。アイコンフォントは <code>swap</code> が基本。
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num" style="background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 8px rgba(239,68,68,.3)">3</div>
+      <div class="insight-body">
+        <strong>preload は万能薬ではない</strong>
+        画像 <code>preload (imagesrcset)</code> はLighthouseで誤判定。フォント <code>preload (as=font)</code> は正しく判定。使い分けが重要。
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 8px rgba(34,197,94,.3)">4</div>
+      <div class="insight-body">
+        <strong>LCPはCPUスロットリングに強く依存</strong>
+        内訳合計2秒 vs 表示7.1秒の5秒乖離はCPU 4xスロットリングのシミュレーション遅延。実環境では発生しにくい。
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num" style="background:linear-gradient(135deg,#a855f7,#9333ea);box-shadow:0 4px 8px rgba(168,85,247,.3)">5</div>
+      <div class="insight-body">
+        <strong>CSS非同期化はデスクトップで逆効果の場合あり</strong>
+        モバイル+2点のためにデスクトップCLS 0.767を引き起こした。両環境の検証が必須。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 今後の改善 ═══════ -->
+<section class="section" id="future">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,var(--accent),#b8860b)">🚀</div>
+    <div>
+      <div class="section-title">今後の改善余地</div>
+      <div class="section-sub">視覚的妥協が必要な次の一手</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="future-grid">
+    <div class="future" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d">
+      <div class="future-icon">📦</div>
+      <div class="future-name" style="color:#78350f">フォント1ウェイト化</div>
+      <div class="future-score" style="color:var(--amber)">78-82</div>
+      <div class="future-impact" style="color:#92400e">Boldが擬似太字</div>
+    </div>
+    <div class="future" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac">
+      <div class="future-icon">📝</div>
+      <div class="future-name" style="color:#14532d">LCP要素をテキストに</div>
+      <div class="future-score" style="color:var(--green)">82-88</div>
+      <div class="future-impact" style="color:#166534">デザイン変更</div>
+    </div>
+    <div class="future" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#93c5fd">
+      <div class="future-icon">🔤</div>
+      <div class="future-name" style="color:#1e3a8a">システムフォント化</div>
+      <div class="future-score" style="color:var(--blue)">85-92</div>
+      <div class="future-impact" style="color:#1e40af">別フォント</div>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:16px;padding:24px;margin-top:20px;color:#fff;text-align:center;box-shadow:0 8px 24px rgba(17,99,132,.2)">
+    <strong style="font-size:1.1em">💡 現在の到達点</strong><br>
+    <span style="opacity:.9;font-size:.9em">「視覚的妥協なし」の限界値（モバイル75・デスクトップ94）に到達。<br>さらなるスコアアップにはデザインへの影響を許容する必要がある。</span>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<!-- ═══════ フッター ═══════ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-section">
+      <h4>NEW FILES</h4>
+      <p><code>scripts/build-font-subset.mjs</code></p>
+      <p><code>src/styles/font-noto.css</code></p>
+    </div>
+    <div class="footer-section">
+      <h4>MODIFIED FILES</h4>
+      <p><code>Layout.astro</code> · <code>index.astro</code></p>
+      <p><code>PageHero.astro</code> · <code>.htaccess</code></p>
+      <p><code>build-fa-subset.mjs</code> · <code>package.json</code></p>
+    </div>
+    <div class="footer-section">
+      <h4>LINKS</h4>
+      <a href="https://hachimantai-chiiki-okoshi.com/">🌐 本番サイト</a>
+      <a href="https://reoanrudo.github.io/hachimantai-perf-summary/">📊 まとめページ</a>
+      <a href="https://app.notion.com/p/S-3a6fa44c915f818c9865ebe3a3d65477">📝 Notion</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    八幡平市地域おこし協力隊 紹介サイト — プロジェクトダッシュボード（2026年7月22日更新）
+  </div>
+</footer>
+
+</body>
+</html>
