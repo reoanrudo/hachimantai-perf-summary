@@ -5,413 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>パフォーマンス最適化まとめ（S+プロジェクト）</title>
 <style>
-  :root {
-    --primary: #116384;
-    --primary-dark: #0d4d66;
-    --night: #143235;
-    --surface: #fbf9f8;
-    --surface-container: #f6f3f2;
-    --on-surface: #1b1c1c;
-    --on-surface-variant: #40484d;
-    --outline: #c0c7ce;
-    --accent: #d89b1d;
-    --green: #1a7f37;
-    --red: #cf222e;
-    --orange: #bf8700;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, -apple-system, sans-serif;
-    background: var(--surface);
-    color: var(--on-surface);
-    line-height: 1.8;
-    padding: 2rem 1rem;
-    -webkit-font-smoothing: antialiased;
-  }
-  .container { max-width: 860px; margin: 0 auto; }
-
-  /* ヘッダー */
-  .doc-header {
-    background: linear-gradient(135deg, var(--night), var(--primary));
-    color: #fff;
-    padding: 2.5rem 2rem;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-  }
-  .doc-header h1 { font-size: 1.7rem; margin-bottom: 0.5rem; }
-  .doc-header .meta { font-size: 0.85rem; opacity: 0.85; }
-
-  /* 成果バナー */
-  .result-banner {
-    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-    border-left: 5px solid var(--green);
-    padding: 1.2rem 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-  }
-  .result-banner strong { color: var(--green); }
-
-  /* 見出し */
-  h2 {
-    font-size: 1.35rem;
-    color: var(--primary);
-    margin: 2.5rem 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--outline);
-  }
-  h2 .icon { margin-right: 0.5rem; }
-  h3 {
-    font-size: 1.1rem;
-    color: var(--night);
-    margin: 1.8rem 0 0.8rem;
-  }
-
-  /* テーブル */
-  .table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    min-width: 480px;
-  }
-  th {
-    background: var(--primary);
-    color: #fff;
-    padding: 0.7rem 0.8rem;
-    text-align: left;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  td {
-    padding: 0.6rem 0.8rem;
-    border-bottom: 1px solid var(--outline);
-  }
-  tr:nth-child(even) td { background: var(--surface-container); }
-  .score-good { color: var(--green); font-weight: 700; }
-  .score-bad { color: var(--red); font-weight: 700; }
-  .score-warn { color: var(--orange); font-weight: 700; }
-
-  /* タスクカード */
-  .task {
-    background: #fff;
-    border: 1px solid var(--outline);
-    border-radius: 10px;
-    padding: 1.3rem 1.5rem;
-    margin-bottom: 1.2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .task-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
-  }
-  .task-number {
-    background: var(--primary);
-    color: #fff;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .task-title { font-size: 1.05rem; font-weight: 700; color: var(--night); }
-  .commit {
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 0.78rem;
-    background: var(--surface-container);
-    color: var(--on-surface-variant);
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid var(--outline);
-  }
-  .task-body { font-size: 0.9rem; color: var(--on-surface-variant); }
-  .task-body p { margin-bottom: 0.5rem; }
-  .task-body .label {
-    display: inline-block;
-    font-weight: 700;
-    color: var(--night);
-    min-width: 4em;
-  }
-  .effect {
-    background: #e8f5e9;
-    border-radius: 6px;
-    padding: 0.6rem 0.9rem;
-    margin-top: 0.6rem;
-    font-size: 0.88rem;
-  }
-  .effect .label { color: var(--green); }
-
-  .highlight-box {
-    background: linear-gradient(135deg, #fff3e0, #fff8e1);
-    border-left: 4px solid var(--accent);
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    margin: 0.6rem 0;
-    font-size: 0.88rem;
-  }
-  .highlight-box strong { color: var(--accent); }
-
-  .warning-box {
-    background: #fef3f2;
-    border-left: 4px solid var(--red);
-    padding: 0.8rem 1.2rem;
-    border-radius: 8px;
-    margin: 1rem 0;
-    font-size: 0.88rem;
-  }
-
-  .info-box {
-    background: #e3f2fd;
-    border-left: 4px solid var(--primary);
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    margin: 1rem 0;
-    font-size: 0.88rem;
-    color: var(--on-surface-variant);
-  }
-
-  /* リスト */
-  ol, ul { padding-left: 1.5rem; margin: 0.8rem 0; }
-  li { margin-bottom: 0.6rem; font-size: 0.9rem; }
-  li strong { color: var(--night); }
-  li code {
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 0.85rem;
-    background: var(--surface-container);
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-  }
-
-  /* フッター */
-  .doc-footer {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid var(--outline);
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--on-surface-variant);
-  }
+:root{--primary:#116384;--primary-dark:#0d4d66;--night:#0a1f23;--night2:#143235;--surface:#fbf9f8;--on-surface:#1b1c1c;--outline:#c0c7ce;--accent:#d89b1d;--green:#16a34a;--green-light:#4ade80;--green-bg:#f0fdf4;--red:#dc2626;--red-bg:#fef2f2;--amber:#d97706;--amber-bg:#fffbeb;--blue:#2563eb;--blue-bg:#eff6ff;--purple:#9333ea;--purple-bg:#faf5ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;background:var(--surface);color:var(--on-surface);line-height:1.8;padding:2rem 1rem;-webkit-font-smoothing:antialiased}
+.container{max-width:860px;margin:0 auto}
+a{color:var(--blue)}
+.hero{background:linear-gradient(135deg,var(--night),var(--night2) 35%,var(--primary-dark) 70%,var(--primary));border-radius:20px;padding:40px 36px 32px;margin-bottom:28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(10,31,35,.4)}
+.hero::before{content:"";position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(216,155,29,.15),transparent 70%);border-radius:50%}
+.hero-kicker{font-size:.72em;font-weight:700;letter-spacing:.2em;opacity:.6;margin-bottom:6px;position:relative}
+.hero-title{font-size:1.85em;font-weight:900;margin-bottom:14px;position:relative}
+.hero-meta{font-size:.82em;opacity:.75;position:relative}
+.hero-meta code{background:rgba(255,255,255,.12);padding:2px 8px;border-radius:4px}
+.hero-stats{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;position:relative}
+.stat-card{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 22px;min-width:130px}
+.stat-label{font-size:.68em;opacity:.6;letter-spacing:.12em}
+.stat-value{font-size:1.9em;font-weight:900}
+.green{color:var(--green-light)}
+.banner-success{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #bbf7d0;border-radius:14px;padding:18px 24px;margin-bottom:28px;font-size:.95em;color:#14532d}
+h2{font-size:1.35em;font-weight:800;color:var(--primary);margin:36px 0 16px;padding-bottom:10px;border-bottom:3px solid var(--primary)}
+.table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.06);margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:.9em;min-width:520px}
+thead tr{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+th{padding:14px 16px;text-align:left;font-weight:700}
+td{padding:11px 16px;border-bottom:1px solid #e2e8f0;text-align:center}
+tbody tr:nth-child(odd){background:#fff}
+tbody tr:nth-child(even){background:#f8fafc}
+.score-good{color:var(--green);font-weight:700}
+.score-good-big{color:var(--green);font-weight:800;font-size:1.2em}
+.score-warn{color:var(--amber);font-weight:700}
+.score-bad{color:var(--red)}
+.badge-green{background:#dcfce7;color:var(--green);padding:3px 10px;border-radius:20px;font-weight:700;font-size:.85em}
+.badge-warn{background:#fef9c3;color:var(--amber);padding:3px 10px;border-radius:20px;font-size:.85em}
+.badge-gray{background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:20px;font-size:.85em}
+.info-box{background:var(--blue-bg);border-left:4px solid var(--blue);border-radius:8px;padding:12px 18px;margin-bottom:28px;font-size:.85em;color:#1e40af}
+.task-card{background:#fff;border:1px solid #e2e8f0;border-left:5px solid var(--primary);border-radius:12px;padding:18px 22px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.task-card-muted{background:#fff;border:1px solid #e2e8f0;border-left:5px solid #64748b;border-radius:12px;padding:18px 22px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.task-card-best{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid var(--accent);border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 8px 24px rgba(245,158,11,.15)}
+.task-number,.task-number-muted{color:#fff;min-width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.9em;margin-right:8px;vertical-align:middle}
+.task-number{background:var(--primary)}
+.task-number-muted{background:#64748b}
+.task-title{font-size:1em;font-weight:700;color:#0f172a;margin-bottom:5px}
+.task-title-best{font-size:1.1em;font-weight:800;color:#78350f;margin-bottom:6px}
+.task-body{font-size:.83em;color:#475569;line-height:1.65}
+.task-body code{background:#f1f5f9;padding:1px 4px;border-radius:3px}
+.task-effect{background:var(--green-bg);border-radius:6px;padding:6px 12px;margin-top:8px;font-size:.8em;color:#166534}
+.task-learn{background:var(--blue-bg);border-radius:6px;padding:6px 12px;margin-top:8px;font-size:.8em;color:#1e40af}
+.commit{font-family:monospace;font-size:.72em;background:#f1f5f9;padding:2px 7px;border-radius:4px;color:#64748b}
+.task-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tag-best{background:#fff;border:1px solid var(--accent);border-radius:20px;padding:4px 14px;font-size:.8em;font-weight:700;color:#b45309}
+.tag-best-outline{background:#fff;border:1px solid var(--accent);border-radius:20px;padding:4px 14px;font-size:.8em;color:#92400e}
+.task-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.task-card-small{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;flex:1;min-width:280px;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:.8em;color:#475569}
+.warning-box{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:2px solid var(--red);border-radius:14px;padding:18px 22px;margin-bottom:28px;color:#b91c1c;font-size:.82em;line-height:1.65}
+.warning-box code{background:#fff;padding:1px 4px;border-radius:3px}
+.chart{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:16px;padding:24px;margin-bottom:28px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.chart-bars{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:160px;padding:0 8px}
+.bar-group{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.bar-label{font-size:.65em;color:#94a3b8;text-align:center}
+.bar{width:100%;max-width:56px;border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;color:#fff;font-weight:800;font-size:.9em}
+.bar-gray{background:linear-gradient(180deg,#64748b,#475569)}
+.bar-red{background:linear-gradient(180deg,#ef4444,#dc2626)}
+.bar-amber{background:linear-gradient(180deg,#f59e0b,#d97706)}
+.bar-green{background:linear-gradient(180deg,#16a34a,#15803d)}
+.bar-green-glow{background:linear-gradient(180deg,#22c55e,#16a34a);box-shadow:0 0 16px rgba(34,197,94,.4)}
+.insight-grid{display:grid;gap:12px;margin-bottom:28px}
+.insight{border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;font-size:.82em;color:#475569;line-height:1.6}
+.insight strong{display:block;margin-bottom:4px}
+.insight-blue{background:linear-gradient(135deg,#fff,var(--blue-bg))}.insight-blue strong{color:#1e3a8a}
+.insight-amber{background:linear-gradient(135deg,#fff,#fefce8)}.insight-amber strong{color:#854d0e}
+.insight-red{background:linear-gradient(135deg,#fff,var(--red-bg))}.insight-red strong{color:#991b1b}
+.insight-green{background:linear-gradient(135deg,#fff,var(--green-bg))}.insight-green strong{color:#14532d}
+.insight-purple{background:linear-gradient(135deg,#fff,var(--purple-bg))}.insight-purple strong{color:#6b21a8}
+.insight-number{min-width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9em;color:#fff;flex-shrink:0}
+.insight-number-blue{background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 4px 8px rgba(59,130,246,.3)}
+.insight-number-amber{background:linear-gradient(135deg,#eab308,#ca8a04);box-shadow:0 4px 8px rgba(234,179,8,.3)}
+.insight-number-red{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 8px rgba(239,68,68,.3)}
+.insight-number-green{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 8px rgba(34,197,94,.3)}
+.insight-number-purple{background:linear-gradient(135deg,#a855f7,#9333ea);box-shadow:0 4px 8px rgba(168,85,247,.3)}
+.future-grid{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.future-card{border:2px solid;border-radius:14px;padding:18px;flex:1;min-width:200px;text-align:center}
+.future-amber{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d}
+.future-green{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac}
+.future-blue{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#93c5fd}
+.future-icon{font-size:2em;margin-bottom:6px}
+.future-score{font-size:1.6em;font-weight:900;margin-top:4px}
+.future-amber .future-score{color:var(--amber)}.future-green .future-score{color:var(--green)}.future-blue .future-score{color:var(--blue)}
+.future-note{font-size:.72em;color:#64748b;margin-top:4px}
+.cta-box{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:14px;padding:20px 24px;margin-bottom:28px;color:#fff;text-align:center;box-shadow:0 8px 24px rgba(17,99,132,.25)}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:28px}
+.footer-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;font-size:.8em;color:#475569}
+.footer-label,.footer-label-amber,.footer-label-green{font-size:.72em;font-weight:700;letter-spacing:.1em;margin-bottom:6px}
+.footer-label{color:var(--primary)}.footer-label-amber{color:var(--amber)}.footer-label-green{color:var(--green)}
+.footer-card code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:.92em}
+@media(max-width:640px){.hero{padding:28px 20px}.hero-title{font-size:1.4em}.stat-card{min-width:100px;padding:10px 16px}.stat-value{font-size:1.5em}.chart-bars{height:120px;gap:4px}.bar{font-size:.75em}.task-row{flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="container">
-
-  <!-- ヘッダー -->
-  <div class="doc-header">
-    <h1>🚀 パフォーマンス最適化まとめ（S+プロジェクト）</h1>
-    <div class="meta">期間: 2026年7月22日｜ブランチ: <code>perf/splus-optimization</code>｜対象: hachimantai-chiiki-okoshi.com</div>
-  </div>
-
-  <!-- 成果バナー -->
-  <div class="result-banner">
-    <strong>最終成果：</strong>モバイル Performance <strong>60→75</strong> ／ デスクトップ Performance <strong>94</strong> ／ 全カテゴリ（Accessibility・Best Practices・SEO）<strong>100維持</strong>
-  </div>
-
-  <!-- スコアサマリー -->
-  <h2><span class="icon">📊</span>スコア改善サマリー（モバイル・3回計測安定値）</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>指標</th><th>改善前</th><th>改善後</th><th>変化</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><strong>Performance</strong></td><td>60</td><td class="score-good">75</td><td class="score-good">+15</td></tr>
-        <tr><td>FCP（初回描画）</td><td>1.3秒</td><td class="score-good">0.9秒</td><td class="score-good">改善</td></tr>
-        <tr><td>LCP（最大描画）</td><td>1.9秒</td><td class="score-warn">7.1秒（※1）</td><td>—</td></tr>
-        <tr><td>TBT（ブロッキング）</td><td>0ms</td><td class="score-good">0ms</td><td class="score-good">維持</td></tr>
-        <tr><td>CLS（レイアウトシフト）</td><td>0.002</td><td class="score-good">0.002</td><td class="score-good">維持</td></tr>
-        <tr><td>レンダリングブロック</td><td>450ms</td><td class="score-good">140ms</td><td class="score-good">-310ms</td></tr>
-        <tr><td>Accessibility</td><td>100</td><td class="score-good">100</td><td class="score-good">維持</td></tr>
-        <tr><td>Best Practices</td><td>100</td><td class="score-good">100</td><td class="score-good">維持</td></tr>
-        <tr><td>SEO</td><td>100</td><td class="score-good">100</td><td class="score-good">維持</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="info-box">
-    <strong>※1</strong> LCP 7.1秒はLighthouseのCPU 4xスロットリングに強く依存する値。実ユーザー環境（WiFi等）では問題ない範囲。デスクトップ計測ではLCP 1.6秒・Performance 94。
-  </div>
-
-  <!-- タスク一覧 -->
-  <h2><span class="icon">🛠️</span>実施タスク一覧（8タスク）</h2>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">1</span>
-      <span class="task-title">Google Fonts（Noto Sans JP）のセルフホスト化</span>
-      <span class="commit">6acf81e</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>Google Fonts CSS（119KB）がPageSpeed Insights指摘の残り最大ボトルネック。未使用CSS 118.4KiB + 最小化未対応 12.3KiB がすべてGoogle Fonts起因。</p>
-      <p><span class="label">対応：</span>Noto Sans JPのOTFをダウンロードし pyftsubset でサブセット化（JIS第1水準+サイト内文字、約3,290文字）。<code>scripts/build-font-subset.mjs</code> を新規作成し prebuild フックに追加。@font-face を global.css 経由で直接定義。Layout.astro からGoogle Fontsの&lt;link&gt;を完全削除。CSP から fonts.googleapis.com / fonts.gstatic.com を削除。</p>
-      <div class="effect"><span class="label">効果：</span>119KB のGoogle Fonts CSSを完全削除。外部CDN依存ゼロ・CSP厳格化。未使用CSS・最小化の指摘を解消。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">2</span>
-      <span class="task-title">ヒーロー画像のリサイズ・アーカイブ整理</span>
-      <span class="commit">8f23cd5</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>ヒーロー画像の元ファイルが6720×4480 / 24.8MB（Canon EOS 5D原寸）。ビルド時に4MBのフォールバック画像が生成。public/images/_archive/ に169MBの未使用画像がデプロイに含まれていた。</p>
-      <p><span class="label">対応：</span>ヒーロー画像を2400×1600にリサイズ（24.8MB→1.4MB、94%削減）。fetchpriority="high" を追加。アーカイブ画像を src/assets/images/_archive/ へ移動（デプロイ対象から除外）。</p>
-      <div class="effect"><span class="label">効果：</span>フォールバック画像 3.96MB→814KB（80%削減）。デプロイサイズ 169MB削減。画質への影響ゼロ。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">3</span>
-      <span class="task-title">preload削除（画像・逆効果判定）</span>
-      <span class="commit">fc525ab</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>ヒーロー画像の preload（imagesrcset）を追加したところ、Lighthouse v13のシミュレーションで8,440msのレンダリングブロックと誤判定され、Performance が76→57に悪化。</p>
-      <p><span class="label">対応：</span>preload &lt;link&gt; を削除。fetchpriority="high" のみ残す。</p>
-      <div class="effect"><span class="label">学び：</span>preload は実ブラウザでは有効だが、Lighthouseシミュレーションでは imagesrcset 付き preload をブロックとして判定する既知の問題あり。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">4</span>
-      <span class="task-title">フォントウェイト 4→2 集約</span>
-      <span class="commit">6c0bb9c</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>Noto Sans JP を4ウェイト（400/500/700/900）配信し転送量1.9MB。</p>
-      <p><span class="label">対応：</span>@font-face の font-weight 範囲指定（100 500 / 501 900）で2ファイルに集約。HTML/CSSのfont-weight指定は一切変更せず配信ファイルのみ最適化。500(Medium)→400(Regular)、900(Black)→700(Bold) で描画。</p>
-      <div class="effect"><span class="label">効果：</span>フォント転送量 1.9MB→955KB（50%削減）。Performance 57→61（+4）。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">5</span>
-      <span class="task-title">フォント preload 追加（最大の改善ポイント）</span>
-      <span class="commit">15a4f1c</span>
-    </div>
-    <div class="highlight-box"><strong>🔥 最大の改善ポイント：Performance +13</strong></div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>CSS内の@font-faceが参照するフォントファイルのダウンロードが、CSS解析完了後才开始まる直列チェーンが6,140msのレンダリングブロックを引き起こしていた。</p>
-      <p><span class="label">対応：</span>&lt;link rel="preload" as="font" type="font/woff2" crossorigin&gt; を&lt;head&gt;に追加。Noto Sans JPの2ウェイトをCSS解析と並行ダウンロード。</p>
-      <div class="effect"><span class="label">効果：</span>Performance 61→74（+13）。FCP 6.3秒→1.5秒（-4.8秒）。レンダリングブロック 6,140ms→970ms。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">6</span>
-      <span class="task-title">Font Awesome の font-display block→swap</span>
-      <span class="commit">a6611cd</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>Font Awesome の @font-face が font-display: block になっており、フォントダウンロード完了までアイコン描画を保留。これがLCPの「要素のレンダリング遅延 2,060ms」の原因だった。</p>
-      <p><span class="label">対応：</span>build-fa-subset.mjs の3ウェイトすべてを block→swap に変更。Font Awesome solid フォントの preload も追加。</p>
-      <div class="effect"><span class="label">効果：</span>LCP要素のレンダリング遅延 2,060ms→410ms（-1,650ms）。FCP 1.5秒→0.9秒。レンダリングブロック 970ms→270ms。フォント表示の指摘は解消。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">7</span>
-      <span class="task-title">ヒーロー画像 quality 最適化</span>
-      <span class="commit">bd2b19c</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">対応：</span>ヒーロー画像の quality を80→72に調整。widths に480w を追加（モバイル解像度選択の最適化）。</p>
-      <div class="effect"><span class="label">効果：</span>ヒーロー画像サイズ全体で18-19%削減（例: 640w 83KB→68KB）。レンダリングブロック 270ms→140ms。画質への影響ほぼなし。</div>
-    </div>
-  </div>
-
-  <div class="task">
-    <div class="task-header">
-      <span class="task-number">8</span>
-      <span class="task-title">ヒーロー画像 object-position 調整</span>
-      <span class="commit">14ec957</span>
-    </div>
-    <div class="task-body">
-      <p><span class="label">課題：</span>画像リサイズに伴い、レスポンシブで画面拡大時にヒーロー画像のアングルが上に寄る現象。</p>
-      <p><span class="label">対応：</span>object-position を center 50%（中央）に統一。</p>
-    </div>
-  </div>
-
-  <div class="warning-box">
-    <strong>⚠️ 試して取り消した施策：</strong>CSS非同期化（media swap）。モバイル+2点の改善があったが、デスクトップでCLS 0.767（致命的レイアウトシフト）とPerformance 94→70の悪化を引き起こしたため取り消し。モバイル+2点 vs デスクトップ-24点のトレードオフで取り消しを判断。
-  </div>
-
-  <!-- スコア推移 -->
-  <h2><span class="icon">📈</span>スコア改善の推移</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>タイミング</th><th>Performance</th><th>FCP</th><th>レンダブロック</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>プロジェクト開始時</td><td>60</td><td>1.3秒</td><td>450ms</td></tr>
-        <tr><td>Google Fonts削除後</td><td class="score-bad">57</td><td class="score-bad">8.7秒</td><td class="score-bad">8,480ms</td></tr>
-        <tr><td>フォント2ウェイト化</td><td>61</td><td>6.3秒</td><td>6,140ms</td></tr>
-        <tr><td>フォントpreload追加</td><td class="score-good">74</td><td class="score-good">1.5秒</td><td>970ms</td></tr>
-        <tr><td>FA swap + preload</td><td>75</td><td class="score-good">0.9秒</td><td>270ms</td></tr>
-        <tr><td><strong>画質最適化（最終）</strong></td><td class="score-good"><strong>75</strong></td><td class="score-good"><strong>0.9秒</strong></td><td>140ms</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 学んだこと -->
-  <h2><span class="icon">🔑</span>学んだこと・重要な知見</h2>
-  <ol>
-    <li><strong>フォントは「サイズ」より「読み込みタイミング」が重要</strong>：フォントウェイトを4→2に減らしても+4しか上がらなかった。しかし preload で読み込みタイミングを並列化しただけで+13の改善。CSS解析と並行してフォントダウンロードを始めることが最大の効果だった。</li>
-    <li><strong>font-display: block は隠れた犯人</strong>：Font Awesome の block が、フォント到着までアイコンを非表示にし、LCPのレンダリング遅延2,060msを引き起こしていた。アイコンフォントでは swap が基本。</li>
-    <li><strong>preload は万能薬ではない</strong>：画像の preload（imagesrcset）はLighthouseでレンダリングブロックと誤判定される。フォントの preload（as=font）は正しく判定される。使い分けが重要。</li>
-    <li><strong>LighthouseのLCPはCPUスロットリングに強く依存</strong>：LCP内訳の合計（約2秒）と表示値（7.1秒）に5秒の乖離。これはCPU 4xスロットリングによるスタイル計算等のシミュレーション遅延。実ユーザー環境では発生しにくい。</li>
-    <li><strong>CSS非同期化（media swap）はデスクトップで逆効果の場合あり</strong>：モバイル+2点のためにデスクトップCLS 0.767を引き起こした。インラインCSSでのFOUC完全防止は難しく、モバイル・デスクトップ両方での検証が必須。</li>
-  </ol>
-
-  <!-- 今後の改善余地 -->
-  <h2><span class="icon">🚀</span>今後の改善余地（視覚的妥協が必要）</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>施策</th><th>予想スコア</th><th>視覚影響</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>フォント1ウェイト化（400のみ）</td><td class="score-warn">78-82</td><td>中（Boldが擬似太字）</td></tr>
-        <tr><td>LCP要素を画像→テキスト(H1)に変更</td><td class="score-warn">82-88</td><td>デザイン変更</td></tr>
-        <tr><td>システムフォントに切替</td><td class="score-good">85-92</td><td>高（別フォント）</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="info-box">
-    <strong>💡</strong> 現在は「視覚的妥協なし」の限界値（モバイル75・デスクトップ94）に到達。さらなるスコアアップにはデザインへの影響を許容する必要がある。
-  </div>
-
-  <!-- 成果物 -->
-  <h2><span class="icon">📁</span>成果物（新規・変更ファイル）</h2>
-  <ul>
-    <li><code>scripts/build-font-subset.mjs</code>（新規）Noto Sans JP サブセット化（prebuild）</li>
-    <li><code>src/styles/font-noto.css</code>（新規）@font-face 定義（2ウェイト・範囲指定）</li>
-    <li><code>scripts/build-fa-subset.mjs</code>（変更）font-display block→swap</li>
-    <li><code>src/layouts/Layout.astro</code>（変更）フォント preload 追加・Google Fonts削除</li>
-    <li><code>src/pages/index.astro</code>（変更）ヒーロー画像最適化・object-position調整</li>
-    <li><code>src/components/PageHero.astro</code>（変更）fetchpriority="high" 追加</li>
-    <li><code>src/styles/global.css</code>（変更）font-noto.css の @import 追加</li>
-    <li><code>public/.htaccess</code>（変更）CSP から Google Fonts 削除</li>
-    <li><code>package.json</code>（変更）prebuild にフォントサブセット追加</li>
-    <li><code>.gitignore</code>（変更）.fonts-src/・src/assets/images/_archive/ 追加</li>
-  </ul>
-
-  <div class="doc-footer">
-    八幡平市地域おこし協力隊 紹介サイト — パフォーマンス最適化まとめ（2026年7月22日）
-  </div>
-
+<div id="content">Loading...</div>
 </div>
+<script>
+// content/summary.md を取得してレンダリング
+fetch('content/summary.md')
+  .then(function(r){ return r.text() })
+  .then(function(markdown){
+    // YAML frontmatter を分離
+    var fmMatch = markdown.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+    var body = fmMatch ? fmMatch[1] : markdown;
+
+    // 簡易Markdown→HTML変換
+    var html = body;
+    // 見出し
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    // 強調
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // インラインコード
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // ブロック分割（HTMLブロックは保持、それ以外は段落化）
+    var blocks = html.split(/\n\n+/);
+    html = blocks.map(function(b){
+      if (b.match(/^<(div|table|h[1-6]|hr|ul|ol)/)) return b;
+      if (b.match(/^</)) return b;
+      return '<p>' + b.replace(/\n/g, '<br>') + '</p>';
+    }).join('\n');
+
+    document.getElementById('content').innerHTML = html;
+  })
+  .catch(function(err){
+    document.getElementById('content').innerHTML = '<p>Error: ' + err.message + '</p>';
+  });
+</script>
 </body>
 </html>

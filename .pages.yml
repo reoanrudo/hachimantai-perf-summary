@@ -1,0 +1,40 @@
+media:
+  input: assets
+  output: assets
+
+content:
+  - name: summary
+    label: パフォーマンス最適化まとめ
+    type: file
+    path: content/summary.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        type: string
+        label: タイトル
+        required: true
+      - name: date
+        type: date
+        label: 更新日
+      - name: tags
+        type: string
+        label: タグ
+        description: カンマ区切り（例: パフォーマンス, Lighthouse）
+      - name: body
+        type: rich-text
+        label: 本文
+        description: Markdown + HTML で記述可能。CSS class でデザイン装飾できます。
+
+  - name: settings
+    label: サイト設定
+    type: file
+    path: content/settings.md
+    format: yaml-frontmatter
+    fields:
+      - name: description
+        type: text
+        label: サイト説明
+      - name: theme_color
+        type: string
+        label: テーマカラー（16進数）
+        description: 例: #116384
