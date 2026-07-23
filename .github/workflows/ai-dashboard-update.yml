@@ -27,23 +27,24 @@ jobs:
             exit 0
           fi
 
-          # 現在の dashboard.html を読み込む
-          CURRENT_HTML=$(cat dashboard.html)
+          # 現在の dashboard.html を一時ファイルに保存（jq --rawfile 用）
+          echo "$ISSUE_BODY" > /tmp/issue_body.txt
 
           # AI に送るプロンプト（Anthropic Messages API 形式）
+          # jq --rawfile でHTMLをファイルから読み込む（特殊文字のエスケープ問題を回避）
           PAYLOAD=$(jq -n \
             --arg model "glm-4.7" \
-            --arghtml current "$CURRENT_HTML" \
+            --rawfile current "dashboard.html" \
             --arg instruction "$ISSUE_TITLE" \
-            --arg detail "$ISSUE_BODY" \
+            --rawfile detail "/tmp/issue_body.txt" \
             '{
               model: $model,
               max_tokens: 16000,
-              system: "あなたはWebダッシュボードの編集アシスタントです。ユーザーの指示に従ってHTMLを編集し、編集後の完全なHTMLのみを返してください。説明文やマークダウンは含めず、<html>から</html>までの完全なHTMLコードのみを出力してください。CSSクラスや既存のデザインシステムを維持してください。",
+              system: "あなたはWebダッシュボードの編集アシスタントです。ユーザーの指示に従ってHTMLを編集し、編集後の完全なHTMLのみを返してください。説明文やマークダウンは含めず、<!DOCTYPE html>から</html>までの完全なHTMLコードのみを出力してください。CSSクラスや既存のデザインシステムを維持してください。",
               messages: [
                 {
                   role: "user",
-                  content: "以下のHTMLダッシュボードがあります。\n\nユーザー指示: \(" + $instruction + ")\n\n詳細: \($detail)\n\n現在のHTML:\n\n" + $current + "\n\nこの指示に従ってHTMLを編集し、完全なHTMLコードのみを返してください。"
+                  content: "以下のHTMLダッシュボードがあります。\n\nユーザー指示: " + $instruction + "\n\n詳細: " + $detail + "\n\n現在のHTML:\n\n" + $current + "\n\nこの指示に従ってHTMLを編集し、完全なHTMLコードのみを返してください。"
                 }
               ]
             }')
