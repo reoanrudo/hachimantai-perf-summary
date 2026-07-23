@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#116384">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ダッシュボード">
+<link rel="manifest" href="manifest.json">
 <title>八幡平市サイト - プロジェクトダッシュボード</title>
 <style>
 :root{
@@ -592,6 +596,114 @@ a:hover{text-decoration:underline}
     <span style="opacity:.9;font-size:.9em">「視覚的妥協なし」の限界値（モバイル75・デスクトップ94）に到達。<br>さらなるスコアアップにはデザインへの影響を許容する必要がある。</span>
   </div>
 </section>
+
+<!-- ═══════ AI指示フォーム ═══════ -->
+<section class="section" id="ai-form" style="max-width:600px;margin:0 auto 48px;padding:0 24px">
+  <div style="background:#fff;border:2px solid var(--primary);border-radius:20px;padding:28px 32px;box-shadow:0 8px 32px rgba(17,99,132,.1)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-size:1.2em;color:#fff">🤖</div>
+      <div>
+        <div style="font-weight:800;font-size:1.1em;color:var(--primary)">AI に指示する</div>
+        <div style="font-size:0.78em;color:var(--text3)">自然言語でダッシュボードを更新</div>
+      </div>
+    </div>
+    <textarea id="ai-instruction" placeholder="例: タスク3を完了にして&#10;例: 新しいタスク「OGP画像の最適化」を追加して&#10;例: モバイルスコアを78に更新して" style="width:100%;min-height:100px;padding:14px 18px;border:2px solid var(--outline2);border-radius:12px;font-size:.92em;font-family:inherit;resize:vertical;margin-bottom:12px;box-sizing:border-box" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--outline2)'"></textarea>
+    <button id="ai-submit" onclick="submitInstruction()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:1em;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 4px 12px rgba(17,99,132,.25)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">送信して更新</button>
+    <div id="ai-status" style="margin-top:12px;font-size:0.82em;text-align:center;color:var(--text3)"></div>
+  </div>
+</section>
+
+<script>
+// PWA サービスワーカー登録
+if ('serviceWorker' in navigator) {
+  // SWファイルは別途必要だが、PWAマニフェストだけでホーム画面追加は可能
+}
+
+// AI指示フォーム送信
+async function submitInstruction() {
+  const instruction = document.getElementById('ai-instruction').value.trim();
+  const statusEl = document.getElementById('ai-status');
+  const btn = document.getElementById('ai-submit');
+
+  if (!instruction) {
+    statusEl.textContent = '⚠️ 指示を入力してください';
+    statusEl.style.color = 'var(--amber)';
+    return;
+  }
+
+  // GitHub Personal Access Token が必要（ローカルストレージから取得）
+  const token = localStorage.getItem('github_token');
+  if (!token) {
+    statusEl.innerHTML = '⚠️ 初回設定が必要です。<a href="#" onclick="showTokenSetup()" style="color:var(--blue)">GitHub トークンを設定</a>してください。';
+    statusEl.style.color = 'var(--amber)';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  statusEl.textContent = '';
+  statusEl.style.color = 'var(--text3)';
+
+  try {
+    // GitHub Issue を作成（これが GitHub Actions のトリガーになる）
+    const res = await fetch('https://api.github.com/repos/reoanrudo/hachimantai-perf-summary/issues', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: instruction,
+        body: 'AI ダッシュボード更新リクエスト（PWAフォーム経由）\n\n送信日時: ' + new Date().toLocaleString('ja-JP'),
+        labels: ['ai-update']
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'GitHub API エラー');
+    }
+
+    const data = await res.json();
+    btn.textContent = '✅ 送信完了';
+    btn.style.background = 'linear-gradient(135deg,var(--green),#15803d)';
+    statusEl.innerHTML = `✅ AI が処理中です。Issue #${data.number} を作成しました。<br>数十秒後にダッシュボードが更新されます。ページをリロードしてください。`;
+    statusEl.style.color = 'var(--green)';
+    document.getElementById('ai-instruction').value = '';
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '送信して更新';
+      btn.style.background = 'linear-gradient(135deg,var(--primary),var(--primary-dark))';
+    }, 5000);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '送信して更新';
+    statusEl.textContent = '❌ エラー: ' + err.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+// GitHub トークン設定
+function showTokenSetup() {
+  const token = prompt('GitHub Personal Access Token (repo権限) を入力してください。\n\n取得方法:\n1. github.com/settings/tokens\n2. Generate new token (classic)\n3. repo 権限にチェック\n4. 生成されたトークンを貼り付け');
+  if (token) {
+    localStorage.setItem('github_token', token.trim());
+    alert('✅ トークンを保存しました。次回から指示送信が可能です。');
+    location.reload();
+  }
+}
+
+// 初回アクセス時にトークン設定を促す
+if (!localStorage.getItem('github_token')) {
+  const notice = document.createElement('div');
+  notice.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--amber-bg);border:2px solid var(--amber);color:#78350f;padding:12px 20px;border-radius:12px;font-size:.85em;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;max-width:90vw;text-align:center';
+  notice.innerHTML = '🤖 AI更新機能を使うには<a href="#" onclick="showTokenSetup();this.closest(\'div\').remove();return false;" style="color:var(--blue);font-weight:700">GitHub トークンを設定</a>してください';
+  document.body.appendChild(notice);
+}
+</script>
 
 </div><!-- /container -->
 
