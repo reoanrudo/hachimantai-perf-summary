@@ -696,6 +696,18 @@ function showTokenSetup() {
   }
 }
 
+// URL パラメータからトークンを自動設定（?setup_token=xxx）
+const urlParams = new URLSearchParams(window.location.search);
+const setupToken = urlParams.get('setup_token');
+if (setupToken) {
+  localStorage.setItem('github_token', setupToken);
+  // URLからトークンパラメータを削除（履歴に残さない）
+  urlParams.delete('setup_token');
+  const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+  window.history.replaceState({}, document.title, newUrl);
+  console.log('✅ トークンを設定しました');
+}
+
 // 初回アクセス時にトークン設定を促す
 if (!localStorage.getItem('github_token')) {
   const notice = document.createElement('div');
