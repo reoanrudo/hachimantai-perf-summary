@@ -32,6 +32,7 @@ jobs:
 
           # AI に送るプロンプト（Anthropic Messages API 形式）
           # jq --rawfile でHTMLをファイルから読み込む（特殊文字のエスケープ問題を回避）
+          # 文字列結合は括弧で明示的にグループ化
           PAYLOAD=$(jq -n \
             --arg model "glm-4.7" \
             --rawfile current "dashboard.html" \
@@ -44,7 +45,7 @@ jobs:
               messages: [
                 {
                   role: "user",
-                  content: "以下のHTMLダッシュボードがあります。\n\nユーザー指示: " + $instruction + "\n\n詳細: " + $detail + "\n\n現在のHTML:\n\n" + $current + "\n\nこの指示に従ってHTMLを編集し、完全なHTMLコードのみを返してください。"
+                  content: ("以下のHTMLダッシュボードがあります。\n\nユーザー指示: " + $instruction + "\n\n詳細: " + $detail + "\n\n現在のHTML:\n\n" + $current + "\n\nこの指示に従ってHTMLを編集し、完全なHTMLコードのみを返してください。")
                 }
               ]
             }')
